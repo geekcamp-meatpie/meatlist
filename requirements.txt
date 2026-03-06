@@ -1,2 +1,8 @@
 streamlit
-openai
+numpy
+pandas
+matplotlib
+opencv-python
+pyocr
+#pip install -r requirements.txt --upgrade
+#pip freeze > requirements.txt
