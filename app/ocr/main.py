@@ -1,6 +1,6 @@
 "OCR機能の実装"
 from PIL import Image
-import pyocr
+import pyocr  # type: ignore
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
