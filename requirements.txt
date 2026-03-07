@@ -1,2 +1,9 @@
 streamlit
-openai
+numpy
+pandas
+matplotlib
+opencv-python
+pyocr
+#pip install -r requirements.txt --upgrade
+#pip freeze > requirements.txt
+#apt install tesseract-ocr libtesseract-dev tesseract-ocr-jpn
