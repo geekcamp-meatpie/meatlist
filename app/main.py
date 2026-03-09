@@ -1,4 +1,5 @@
 "こっちにstreamlit!!"
 import streamlit as st
 
-st.title("みーとぅーりすと")
+st.title("みーとぅーりすとだよ")
+
