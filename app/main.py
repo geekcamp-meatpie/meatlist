@@ -12,13 +12,17 @@ with tab1:
     upload_file = st.file_uploader("画像を選択してください", type=['png', 'jpg', 'jpeg'])
     if upload_file:
         img = Image.open(upload_file)
-        st.image(img, caption="アップロードされた画像", use_container_width=True)
+        st.image(img, caption="アップロードされた画像", use_container_width=True#画像の大きさ自動調節)
 
 with tab2:
     # カメラ起動
     camera_file = st.camera_input("カメラでメモを撮ってください")
     if camera_file:
         img = Image.open(camera_file)
-        st.image(img, caption="撮影された画像", use_container_width=True)
+        st.image(img, caption="撮影された画像", use_container_width=True#画像の大きさ自動調節)
 
 target_image = upload_file or camera_file
+
+if target_image:
+    if st.button("みーとぅーりすとを作る"):
+        st.info("処理中")
