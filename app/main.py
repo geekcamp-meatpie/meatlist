@@ -3,7 +3,7 @@ import streamlit as st
 
 st.title("みーとぅーりすと🍖")
 
-st.header("写真を読み込む")
+st.subheader("写真を読み込む")
 
 
 
