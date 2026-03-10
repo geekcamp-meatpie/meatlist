@@ -22,7 +22,3 @@ with tab2:
         st.image(img, caption="撮影された画像", use_container_width=True#画像の大きさ自動調節)
 
 target_image = upload_file or camera_file
-
-if target_image:
-    if st.button("みーとぅーりすとを作る"):
-        st.info("処理中")
