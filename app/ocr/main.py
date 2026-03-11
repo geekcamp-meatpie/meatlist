@@ -15,10 +15,6 @@ class todolist():
    def to_json(self):
     data = {"txt_data":self.text}
     return data
-
-
-
-
 def adjust_img(data):
     height, width = data.shape[:2]
     new_height = int(height * (300 / 96))  
@@ -31,7 +27,7 @@ def adjust_img(data):
     cv2.imwrite('resized_image.png', recreated_image)
     return print("sucucess")
 
-cap = cv2.VideoCapture(0)
+
 
 tools = pyocr.get_available_tools()
 if not tools:
@@ -39,6 +35,10 @@ if not tools:
     sys.exit(1)
 tool = tools[0]
 
+#↓動画キャプチャのコードは一旦コメントアウトしておきます。（動画でのocrは要相談）
+#cap = cv2.VideoCapture(0)
+#cap.release()
+#cv2.destroyAllWindows()
 def video_capture():
   cap = cv2.VideoCapture(0)
   tools = pyocr.get_available_tools()
@@ -71,6 +71,7 @@ def video_capture():
         print("\n--- OCR読み取り結果 ---")
         print(txt1)
         print("-----------------------\n")
+#動画キャプチャここまで
 
 def photo_capture(filepath):
     img = cv2.imread(filepath)
@@ -81,7 +82,6 @@ def photo_capture(filepath):
         lang='jpn',
         builder=pyocr.builders.TextBuilder(tesseract_layout=4)
     )
+
     return todolist.to_json(todolist(txt1))
 Text_json = photo_capture(filepath)
-#cap.release()
-#cv2.destroyAllWindows()
