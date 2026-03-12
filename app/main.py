@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 
-from ocr import ocr_from_image
-from todo_generator import generate_todo_with_llm
-from utils import is_allowed_file
+from app.ocr import ocr_from_image
+from app.todo_generator import generate_todo_with_llm
+from app.utils import is_allowed_file
 
 app = FastAPI(
     title="Meatlist API",
