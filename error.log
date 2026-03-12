@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "C:\Users\aston\Documents\GitHub\meatlist\test_ocr.py", line 6, in <module>
+    text = ocr_from_image(img)
+  File "C:\Users\aston\Documents\GitHub\meatlist\app\ocr\main.py", line 80, in ocr_from_image
+    processed = adjust_img(img_array)
+  File "C:\Users\aston\Documents\GitHub\meatlist\app\ocr\main.py", line 47, in adjust_img
+    gray_image = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
+cv2.error: OpenCV(4.12.0) D:\a\opencv-python\opencv-python\opencv\modules\imgproc\src\color.simd_helpers.hpp:92: error: (-15:Bad number of channels) in function '__cdecl cv::impl::`anonymous-namespace'::CvtHelper<struct cv::impl::`anonymous namespace'::Set<3,4,-1>,struct cv::impl::A0x6f7fe6c3::Set<1,-1,-1>,struct cv::impl::A0x6f7fe6c3::Set<0,2,5>,4>::CvtHelper(const class cv::_InputArray &,const class cv::_OutputArray &,int)'
+> Invalid number of channels in input image:
+>     'VScn::contains(scn)'
+> where
+>     'scn' is 1
+
