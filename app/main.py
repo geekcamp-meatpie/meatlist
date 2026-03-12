@@ -1,4 +1,7 @@
-"こっちにstreamlit!!"
+
+from ocr import main as ocr
+print(f"取得:{ocr.Text_json}")
+
 import streamlit as st
 
 st.title("みーとぅーりすと🍖")
