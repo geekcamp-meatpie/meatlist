@@ -1,6 +1,6 @@
 import json
 from openai import OpenAI
-from utils import load_api_key
+from app.utils import load_api_key
 
 
 def generate_todo_with_llm(ocr_text: str) -> dict:

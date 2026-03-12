@@ -70,8 +70,11 @@ def ocr_from_image(pil_image: Image.Image) -> str:
     # PIL Image → OpenCV形式に変換
     img_array = np.array(pil_image)
 
+    # グレースケールの場合はBGRに変換（OpenCVの後の処理でBGRであることを期待している場合）
+    if len(img_array.shape) == 2:
+        img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2BGR)
     # RGBAの場合はRGBに変換
-    if len(img_array.shape) == 3 and img_array.shape[2] == 4:
+    elif len(img_array.shape) == 3 and img_array.shape[2] == 4:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_RGBA2BGR)
     elif len(img_array.shape) == 3:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
