@@ -25,3 +25,10 @@ with tab2:
         st.image(img, caption="撮影された画像", use_container_width=True)
                                                   #↑画像の大きさ自動調節
 target_image = upload_file or camera_file
+
+if st.button("みーとぅーりすとを作成🍖", type="primary"):
+    with st.spinner("作成中"):
+        response = ocr(target_image)
+        if response.get("task"):
+            for i, item in enumerate(response["task"]):
+             st.checkbox(item, key=f"todo_{i}")
