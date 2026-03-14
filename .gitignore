@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+resized_image.png
+*.log
