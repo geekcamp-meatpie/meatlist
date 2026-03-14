@@ -32,5 +32,6 @@ if st.button("みーとぅーりすとを作成🍖", type="primary"):
         response = photo_capture(target_image)
         if response.get("txt_data"):
             task_list=response[txt_data].splitlines()
-            for i, item in enumerate(response["task"]):
+            for i, item in enumerate(task_list):
+                if item.strip():
              st.checkbox(item, key=f"todo_{i}")
