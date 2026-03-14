@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from PIL import Image
 import pyocr
 import cv2
@@ -85,7 +84,7 @@ def photo_capture(filepath):
     return todolist.to_json(todolist(txt1))
 
 Text_json = photo_capture(filepath)
-=======
+
 from PIL import Image
 import pyocr
 import numpy as np
@@ -216,4 +215,3 @@ def photo_capture(filepath: str) -> str:
 
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     return '\n'.join(lines)
->>>>>>> 13f7bddc438c15b9012d0445c084d366b516609b
