@@ -1,13 +1,12 @@
 import streamlit as st
 from PIL import Image
 import json
+import requests
+from .ocr import ocr_from_image
+from .todo_generator import generate_todo_with_llm
 
-from ocr import ocr_from_image
-from todo_generator import generate_todo_with_llm
+url="http://localhost:8000/post_filepath"
 
-# =========================================
-# ページ設定
-# =========================================
 st.set_page_config(
     page_title="みーとぅーりすと🍖",
     page_icon="🍖",
@@ -19,14 +18,12 @@ st.caption("手書きメモ・ノート・ホワイトボードの画像をア�
 
 st.divider()
 
-# =========================================
-# 画像入力（タブで選択・撮影を切替）
-# =========================================
+
 st.subheader("📷 写真を読み込む")
 
 tab1, tab2 = st.tabs(["📁 ファイルから選択", "📸 カメラで撮影"])
 
-uploaded_image = None  # 最終的に使う画像
+uploaded_image = None  
 
 with tab1:
     upload_file = st.file_uploader(
@@ -42,9 +39,7 @@ with tab2:
     if camera_file:
         uploaded_image = Image.open(camera_file)
 
-# =========================================
-# メイン処理（画像が選択された場合）
-# =========================================
+
 if uploaded_image:
     st.divider()
 

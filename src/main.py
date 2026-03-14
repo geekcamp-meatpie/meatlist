@@ -2,38 +2,53 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
+import streamlit as st
+from fastapi.responses import FileResponse
 
-from app.ocr import ocr_from_image
-from app.todo_generator import generate_todo_with_llm
-from app.utils import is_allowed_file
+from .todo_generator import generate_todo_with_llm
+from .ocr import photo_capture
+#from .utils import is_allowed_file
 
 app = FastAPI(
     title="Meatlist API",
-    description="画像からAI-OCRで文字を抽出し、Todoリストを生成するAPI",
+    description="meatpie_API",
     version="1.0.0"
 )
 
-# CORS設定（スマホフロントからのアクセスを許可）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
+) 
+file_data: list[bytes] = []
+count = 0
 
 
-@app.get("/")
-def health_check():
-    """ヘルスチェック"""
-    return {"status": "ok", "message": "Meatlist API is running"}
+@app.post("/post_filepath")
+async def upload_image(file: UploadFile = File(...)):
+    global count
 
+    contents = await file.read()
 
-with tab2:
-    # カメラ起動
-    camera_file = st.camera_input("カメラでメモを撮ってください")
-    if camera_file:
-        img = Image.open(camera_file)
-        st.image(img, caption="撮影された画像", use_container_width=True)
-                                                  #↑画像の大きさ自動調節
-target_image = upload_file or camera_file
+    file_data.append(contents)
+
+    with open(f"image_{count}.png", "wb") as f:
+        f.write(contents)
+
+    count += 1
+
+    return {"filename": file.filename}
+@app.get("/download")
+async def download():
+    if not file_data:
+        raise HTTPException(status_code=404, detail="No file")
+
+    return {"byte": file_data[-1]}
+@app.get("/return_json/{count}")
+async def return_json():
+    text = photo_capture(f"image_{count}.png")
+    json = generate_todo_with_llm(text)
+    return json
+

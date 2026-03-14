@@ -1,0 +1,4 @@
+curl -X POST \
+  -F "file=@/workspaces/python/cat" \
+  http://127.0.0.1:8000/post_filepath
+
