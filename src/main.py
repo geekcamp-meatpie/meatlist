@@ -6,7 +6,7 @@ import streamlit as st
 from fastapi.responses import FileResponse
 
 
-from .todo_generator import generate_todo_with_llm
+from .llm import generate_todo_list
 from .ocr import photo_capture
 #from .utils import is_allowed_file
 
@@ -46,6 +46,6 @@ async def download():
 @app.get("/return_json/{count}")
 async def return_json():
     text = photo_capture(f"image_{count}.png")
-    json = generate_todo_with_llm(text)
+    json = generate_todo_list(text)
     return json
 

@@ -1,3 +1,4 @@
+
 from PIL import Image
 import pyocr
 import numpy as np
@@ -128,4 +129,7 @@ def photo_capture(filepath: str) -> str:
 
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     return '\n'.join(lines)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6852e47809f1314cba3c68002e23aa05a8ac09ce
