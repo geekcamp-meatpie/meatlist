@@ -1,5 +1,5 @@
-
-from ocr import main as ocr
+from PIL import Image
+from meatpie.app.ocr import main as ocr
 print(f"取得:{ocr.Text_json}")
 
 import streamlit as st
@@ -24,4 +24,6 @@ with tab2:
         img = Image.open(camera_file)
         st.image(img, caption="撮影された画像", use_container_width=True)
                                                   #↑画像の大きさ自動調節
-target_image = upload_file or camera_file
+Target_image = upload_file or camera_file
+def Return_file():
+    return Target_image

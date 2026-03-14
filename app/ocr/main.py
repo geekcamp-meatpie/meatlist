@@ -1,13 +1,11 @@
 from PIL import Image
 import pyocr
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import cv2
 import sys
 from dataclasses import dataclass
+from app.ocr.main import Return_file
 
-filepath = '/workspaces/python/meatpie/png/print-ocr1.png'
+filepath = Return_file()
 
 @dataclass
 class todolist():
@@ -84,4 +82,5 @@ def photo_capture(filepath):
     )
 
     return todolist.to_json(todolist(txt1))
+
 Text_json = photo_capture(filepath)
