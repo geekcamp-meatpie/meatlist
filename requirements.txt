@@ -1,9 +1,14 @@
 streamlit
 numpy
-pandas
-matplotlib
+Pillow
 opencv-python
 pyocr
+openai
+python-dotenv
+fastapi
+uvicorn[standard]
+python-multipart
+requests
 #pip install -r requirements.txt --upgrade
 #pip freeze > requirements.txt
 #apt install tesseract-ocr libtesseract-dev tesseract-ocr-jpn
