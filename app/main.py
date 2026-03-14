@@ -1,6 +1,7 @@
 
-from ocr import main as ocr
-print(f"取得:{ocr.Text_json}")
+from ocr.main import photo_capture
+from PIL import Image
+
 
 import streamlit as st
 
@@ -28,7 +29,8 @@ target_image = upload_file or camera_file
 
 if st.button("みーとぅーりすとを作成🍖", type="primary"):
     with st.spinner("作成中"):
-        response = ocr(target_image)
-        if response.get("task"):
+        response = photo_capture(target_image)
+        if response.get("txt_data"):
+            task_list=response[txt_data].splitlines()
             for i, item in enumerate(response["task"]):
              st.checkbox(item, key=f"todo_{i}")
