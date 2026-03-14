@@ -4,6 +4,9 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
+# モジュール読み込み時に環境変数をロード
+load_dotenv()
+
 # ----------------------------------------------------------------------
 # 【モデル変更時の注意点】
 # LLMをGoogle Geminiに変更しました。最新の `google-genai` SDK を使用しています。
@@ -14,7 +17,6 @@ def get_gemini_client():
     """
     Geminiクライアントの初期化
     """
-    load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         print("エラー: GEMINI_API_KEY が設定されていません。")
@@ -47,32 +49,34 @@ def generate_todo_list(ocr_text: str) -> dict:
     system_prompt = """
 あなたは優秀なタスク管理アシスタントです。
 ユーザーから提供されたOCRのテキストデータを分析し、ToDoリストを作成してください。
-出力は必ず以下の構造を持つJSON形式で返してください。それ以外のテキストやMarkdownの装飾（```json など）は含めないでください。
 
-【出力JSONフォーマット例】
+【抽出ルール】
+- OCRのノイズ（記号の誤認、改行の乱れなど）を適切に無視してください。
+- 文脈から明らかに「やるべきこと（タスク）」と思われる内容のみを抽出してください。
+- 期限や詳細が含まれる場合は、それも含めて一つのタスクとして記述してください。
+
+出力は必ず以下の構造を持つ純粋なJSON形式で返してください。それ以外のテキストやMarkdownの装飾（```json など）は絶対に含めないでください。
+
+【出力JSONフォーマット】
 {
   "todos": [
     {
-      "task": "牛乳を買う",
-      "status": "todo"
-    },
-    {
-      "task": "企画書を提出する",
+      "task": "タスクの内容",
       "status": "todo"
     }
   ]
 }
 """
 
-    user_prompt = f"以下のテキストからToDoリストを作成してください:\n\n{ocr_text}"
+    user_prompt = f"以下のテキストからToDoリストを抽出してください:\n\n{ocr_text}"
 
     try:
-        # Gemini API呼び出し (最新のgemini-2.5-flash または gemini-2.0-flash を使用)
+        # Gemini API呼び出し (モデル名を正しい安定版 gemini-2.0-flash に修正)
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-2.0-flash',
             contents=f"{system_prompt}\n\n{user_prompt}",
             config=types.GenerateContentConfig(
-                temperature=0.3,
+                temperature=0.1,  # 決定論的な出力を得るために低めに設定
                 response_mime_type="application/json", # JSON出力を強制
             )
         )
