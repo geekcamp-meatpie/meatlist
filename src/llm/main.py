@@ -14,16 +14,30 @@ load_dotenv()
 # ----------------------------------------------------------------------
 
 def get_gemini_client():
-    """
-    Geminiクライアントの初期化
-    """
+    # 環境変数を再ロードして強制的に上書き
+    import dotenv
+    dotenv.load_dotenv(override=True)
+    
     api_key = os.environ.get("GEMINI_API_KEY")
+    
+    if api_key:
+        # クォート、空白、CRLFなどを徹底的に除去
+        api_key = api_key.strip().strip("'").strip('"')
+        # もし値の中に "GEMINI_API_KEY=" が紛れ込んでいたら除去
+        if "=" in api_key:
+            api_key = api_key.split("=")[-1].strip()
+        # AIza以外の文字が先頭に含まれている場合のガード
+        if "AIza" in api_key:
+            api_key = api_key[api_key.find("AIza"):]
+            
+        print(f"DEBUG: Using API Key (length {len(api_key)}): {api_key[:10]}...{api_key[-5:] if len(api_key) > 5 else ''}")
+    
     if not api_key:
         print("エラー: GEMINI_API_KEY が設定されていません。")
         return None
         
     try:
-        # 新しい SDK では genai.Client() を使用してクライアントを初期化します
+        # クライアント初期化
         client = genai.Client(api_key=api_key)
         return client
     except Exception as e:
@@ -74,10 +88,15 @@ def generate_todo_list(ocr_text: str) -> dict:
     user_prompt = f"以下のテキストからToDoリストを抽出してください:\n\n{ocr_text}"
 
     try:
-        # Gemini API呼び出し (最もシンプルな呼び出し形式)
+        # Gemini API呼び出し (1.5-flash を安定性のために使用。プレフィックスを明示)
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=f"{system_prompt}\n\n{user_prompt}",
+            model='gemini-2.0-flash', # もし失敗したら 'models/gemini-1.5-flash'
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0.1,
+                response_mime_type='application/json'
+            )
         )
 
         result_text = response.text.strip()
@@ -126,8 +145,11 @@ def generate_todo_list(ocr_text: str) -> dict:
         
         # エラーの詳細はコンソールに出力してデバッグしやすくする
         import traceback
+        print("-" * 50)
+        print(f"LLM Raw Error Object: {repr(e)}")
         print(f"LLM Error Details:\n{traceback.format_exc()}")
         print(f"Using API Key: {os.environ.get('GEMINI_API_KEY', 'NotFound')[:4]}...")
+        print("-" * 50)
         return {
             "error": error_msg, 
             "todos": [], 
