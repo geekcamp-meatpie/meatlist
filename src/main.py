@@ -3,9 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 
-from app.ocr import ocr_from_image
-from app.todo_generator import generate_todo_with_llm
-from app.utils import is_allowed_file
+# パッケージベースのインポートを使用（srcディレクトリがパスに含まれている前提）
+try:
+    from ocr import ocr_from_image
+    from llm import generate_todo_list
+    from utils import is_allowed_file
+except ImportError:
+    # 実行環境によってパスが異なる場合のフォールバック
+    from .ocr import ocr_from_image
+    from .llm import generate_todo_list
+    from .utils import is_allowed_file
+
 
 app = FastAPI(
     title="Meatlist API",
@@ -28,12 +36,26 @@ def health_check():
     """ヘルスチェック"""
     return {"status": "ok", "message": "Meatlist API is running"}
 
-
-with tab2:
-    # カメラ起動
-    camera_file = st.camera_input("カメラでメモを撮ってください")
-    if camera_file:
-        img = Image.open(camera_file)
-        st.image(img, caption="撮影された画像", use_container_width=True)
-                                                  #↑画像の大きさ自動調節
-target_image = upload_file or camera_file
+@app.post("/upload")
+async def upload_image(file: UploadFile = File(...)):
+    """画像をアップロードしてTodoリストを生成する"""
+    if not is_allowed_file(file.filename):
+        raise HTTPException(status_code=400, detail="許可されていないファイル形式です")
+    
+    try:
+        content = await file.read()
+        image = Image.open(io.BytesIO(content))
+        
+        # OCR実行
+        ocr_text = ocr_from_image(image)
+        
+        if not ocr_text:
+            return {"todos": [], "markdown": "", "message": "テキストを検出できませんでした"}
+            
+        # LLM実行
+        result = generate_todo_list(ocr_text)
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

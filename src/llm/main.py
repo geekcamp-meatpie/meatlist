@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-# モジュール読み込み時に環境変数をロード
+# モジュール読み込み時に環境変数をロード.
 load_dotenv()
 
 # ----------------------------------------------------------------------
@@ -44,18 +44,21 @@ def generate_todo_list(ocr_text: str) -> dict:
     """
     client = get_gemini_client()
     if not client:
-        return {"error": "APIクライアントの初期化エラー", "todos": []}
+        return {
+            "error": "APIクライアントの初期化エラー", 
+            "todos": [], 
+            "markdown": "APIクライアントの初期化に失敗しました。APIキーを確認してください。"
+        }
 
     system_prompt = """
 あなたは優秀なタスク管理アシスタントです。
-ユーザーから提供されたOCRのテキストデータを分析し、ToDoリストを作成してください。
+ユーザーから提供されたOCRのテキストデータを分析し、ToDoリストをJSON形式で作成してください。
 
 【抽出ルール】
 - OCRのノイズ（記号の誤認、改行の乱れなど）を適切に無視してください。
 - 文脈から明らかに「やるべきこと（タスク）」と思われる内容のみを抽出してください。
-- 期限や詳細が含まれる場合は、それも含めて一つのタスクとして記述してください。
 
-出力は必ず以下の構造を持つ純粋なJSON形式で返してください。それ以外のテキストやMarkdownの装飾（```json など）は絶対に含めないでください。
+出力は必ず以下の構造を持つ純粋なJSON形式で返してください。それ以外のテキスト（「分かりました」など）やMarkdownの装飾（```json など）は絶対に含めないでください。
 
 【出力JSONフォーマット】
 {
@@ -71,25 +74,65 @@ def generate_todo_list(ocr_text: str) -> dict:
     user_prompt = f"以下のテキストからToDoリストを抽出してください:\n\n{ocr_text}"
 
     try:
-        # Gemini API呼び出し (モデル名を正しい安定版 gemini-2.0-flash に修正)
+        # Gemini API呼び出し (最もシンプルな呼び出し形式)
         response = client.models.generate_content(
             model='gemini-2.0-flash',
             contents=f"{system_prompt}\n\n{user_prompt}",
-            config=types.GenerateContentConfig(
-                temperature=0.1,  # 決定論的な出力を得るために低めに設定
-                response_mime_type="application/json", # JSON出力を強制
-            )
         )
 
-        result_text = response.text
+        result_text = response.text.strip()
         
-        # JSON文字列を辞書オブジェクトに変換して返す
-        todo_data = json.loads(result_text)
+        # Markdownのコードブロックが含まれている場合のトリミング
+        if result_text.startswith("```"):
+            lines = result_text.splitlines()
+            if lines[0].startswith("```json"):
+                result_text = "\n".join(lines[1:-1])
+            elif lines[0].startswith("```"):
+                result_text = "\n".join(lines[1:-1])
+
+        # JSON文字列を辞書オブジェクトに変換
+        try:
+            todo_data = json.loads(result_text)
+        except json.JSONDecodeError:
+            # パース失敗時のフォールバック
+            return {
+                "todos": [],
+                "markdown": f"AIの応答形式が正しくありませんでした:\n{result_text}",
+                "error": "JSON_PARSE_ERROR"
+            }
+
+        # 必要なキーが含まれているか確認し、無ければ補完
+        if "todos" not in todo_data:
+            todo_data["todos"] = []
+        
+        # MarkdownをPython側で生成（トークン節約と形式安定のため）
+        md = "### AI抽出されたToDoリスト\n"
+        if not todo_data["todos"]:
+            md += "タスクが検出されませんでした。"
+        else:
+            for t in todo_data["todos"]:
+                task_name = t.get("task", "不明なタスク")
+                md += f"- [ ] {task_name}\n"
+        
+        todo_data["markdown"] = md
         return todo_data
 
     except Exception as e:
-        print(f"LLMでの処理中にエラーが発生しました: {e}")
-        return {"error": str(e), "todos": []}
+        error_msg = str(e)
+        user_friendly_msg = "LLMでの処理中にエラーが発生しました。"
+        
+        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+            user_friendly_msg = "【制限エラー】Google APIの利用制限に達しました。30秒〜1分ほど待ってから再度お試しください。現在のAPIキーのステータスを確認してください。"
+        
+        # エラーの詳細はコンソールに出力してデバッグしやすくする
+        import traceback
+        print(f"LLM Error Details:\n{traceback.format_exc()}")
+        print(f"Using API Key: {os.environ.get('GEMINI_API_KEY', 'NotFound')[:4]}...")
+        return {
+            "error": error_msg, 
+            "todos": [], 
+            "markdown": user_friendly_msg
+        }
 
 
 # --- 動作確認用 ---

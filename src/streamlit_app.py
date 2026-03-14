@@ -2,8 +2,12 @@ import streamlit as st
 from PIL import Image
 import json
 
-from ocr import ocr_from_image
-from todo_generator import generate_todo_with_llm
+try:
+    from ocr import ocr_from_image
+    from llm import generate_todo_list
+except ImportError:
+    from .ocr import ocr_from_image
+    from .llm import generate_todo_list
 
 # =========================================
 # ページ設定
@@ -72,7 +76,7 @@ if uploaded_image:
                         st.stop()
 
                     # LLMでTodo生成
-                    result = generate_todo_with_llm(ocr_text)
+                    result = generate_todo_list(ocr_text)
 
                     # セッションに保存
                     st.session_state["result"] = result
@@ -89,6 +93,10 @@ if uploaded_image:
         result = st.session_state["result"]
         ocr_text = st.session_state["ocr_text"]
 
+        # もし結果にエラーが含まれていれば警告を表示
+        if result.get("error"):
+            st.warning(result.get("markdown", "AIの処理でエラーが発生しました。"))
+
         # OCR生テキスト（折りたたみ）
         with st.expander("🔍 OCR読み取り結果（生テキスト）"):
             st.text(ocr_text)
@@ -97,7 +105,7 @@ if uploaded_image:
         tab_md, tab_json = st.tabs(["📋 Markdown", "{ } JSON"])
 
         with tab_md:
-            markdown_text = result["markdown"]
+            markdown_text = result.get("markdown", "Markdown形式のデータが生成されませんでした。")
             st.code(markdown_text, language="markdown")
 
             # .md ダウンロード
@@ -110,7 +118,8 @@ if uploaded_image:
             )
 
         with tab_json:
-            json_text = json.dumps(result["tasks"], ensure_ascii=False, indent=2)
+            todos = result.get("todos", [])
+            json_text = json.dumps(todos, ensure_ascii=False, indent=2)
             st.code(json_text, language="json")
 
             # .json ダウンロード
