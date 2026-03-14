@@ -1,6 +1,7 @@
 
-from ocr import main as ocr
-print(f"取得:{ocr.Text_json}")
+from ocr.main import photo_capture
+from PIL import Image
+
 
 import streamlit as st
 
@@ -28,52 +29,16 @@ target_image = upload_file or camera_file
 
 if st.button("みーとぅーりすとを作成🍖", type="primary"):
     with st.spinner("作成中"):
-        response = photo_capture(target_image)
-        if response.get("txt_data"):
-            task_list=response[txt_data].splitlines()
-            for i, item in enumerate(task_list):
-                if item.strip():
-             st.checkbox(item, key=f"todo_{i}")
-@app.post("/ocr")
-async def process_image(file: UploadFile = File(...)):
-    """
-    画像をアップロードし、OCR → Todo生成を行う
+        if target_image is None:st.warning("画像を選択または撮影してください")
+        else:
+            temp_filename="temp_capture.png"
+            with open(temp_filename, "wb") as f:
+                f.write(target_image.getvalue())
+            
+            response = photo_capture(temp_filename)
+            if response.get("txt_data"):
+                task_list=response["txt_data"].splitlines()
+                for i, item in enumerate(task_list):
+                    if item.strip():
+                      st.checkbox(item, key=f"todo_{i}")
 
-    - 入力: 画像ファイル (jpg/jpeg/png)
-    - 出力: OCRテキスト + Todoリスト (JSON + Markdown)
-    """
-    # ファイル形式チェック
-    if not file.filename or not is_allowed_file(file.filename):
-        raise HTTPException(
-            status_code=400,
-            detail="対応していないファイル形式です。jpg, jpeg, png のみ対応しています。"
-        )
-
-    try:
-        # 画像を読み込み
-        contents = await file.read()
-        pil_image = Image.open(io.BytesIO(contents))
-
-        # OCR実行
-        ocr_text = ocr_from_image(pil_image)
-
-        if not ocr_text:
-            return {
-                "ocr_text": "",
-                "tasks": [],
-                "markdown": ""
-            }
-
-        # LLMでTodo生成
-        result = generate_todo_with_llm(ocr_text)
-
-        return {
-            "ocr_text": ocr_text,
-            "tasks": result["tasks"],
-            "markdown": result["markdown"]
-        }
-
-    except RuntimeError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"処理中にエラーが発生しました: {str(e)}")
