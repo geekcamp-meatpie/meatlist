@@ -1,21 +1,33 @@
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
-from meatpie.app.ocr import main as ocr
-print(f"取得:{ocr.Text_json}")
+import io
 
-import streamlit as st
+from app.ocr import ocr_from_image
+from app.todo_generator import generate_todo_with_llm
+from app.utils import is_allowed_file
 
-st.title("みーとぅーりすと🍖")
+app = FastAPI(
+    title="Meatlist API",
+    description="画像からAI-OCRで文字を抽出し、Todoリストを生成するAPI",
+    version="1.0.0"
+)
 
-st.subheader("写真を読み込む")
+# CORS設定（スマホフロントからのアクセスを許可）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-tab1, tab2 = st.tabs(["ファイルから選択", "カメラで撮影"])
 
-with tab1:
-    # ファイル選択
-    upload_file = st.file_uploader("画像を選択してください", type=['png', 'jpg', 'jpeg'])
-    if upload_file:
-        img = Image.open(upload_file)
-        st.image(img, caption="アップロードされた画像", use_container_width=True)
+@app.get("/")
+def health_check():
+    """ヘルスチェック"""
+    return {"status": "ok", "message": "Meatlist API is running"}
+
 
 with tab2:
     # カメラ起動
@@ -24,6 +36,4 @@ with tab2:
         img = Image.open(camera_file)
         st.image(img, caption="撮影された画像", use_container_width=True)
                                                   #↑画像の大きさ自動調節
-Target_image = upload_file or camera_file
-def Return_file():
-    return Target_image
+target_image = upload_file or camera_file
