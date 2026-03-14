@@ -5,6 +5,7 @@ import io
 import streamlit as st
 from fastapi.responses import FileResponse
 
+
 from .todo_generator import generate_todo_with_llm
 from .ocr import photo_capture
 #from .utils import is_allowed_file
@@ -29,14 +30,10 @@ count = 0
 @app.post("/post_filepath")
 async def upload_image(file: UploadFile = File(...)):
     global count
-
     contents = await file.read()
-
     file_data.append(contents)
-
     with open(f"image_{count}.png", "wb") as f:
         f.write(contents)
-
     count += 1
 
     return {"filename": file.filename}
