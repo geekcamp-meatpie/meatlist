@@ -1,5 +1,22 @@
+# APIキーなどの機密情報
 .env
+
+# Python実行キャッシュ・仮想環境
 __pycache__/
 *.pyc
+.venv/
+build/
+dist/
+*.egg-info/
+
+# エディタ設定
+.vscode/
+.idea/
+
+# プログラムで生成される一時ファイル
 resized_image.png
 *.log
+models.txt
+models_list.txt
+src/list_models.py
+src/diag_env.py
